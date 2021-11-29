@@ -30,6 +30,7 @@ Add the following your `bitbucket-pipelines.yml` file:
 | LEVEL                        | (Optional) Which level to execute phpstan at. Default: `0`|
 | AUTOLOADER                   | (Optional) Which PHP Autoloader to use. Default: `vendor/autoload.php`|
 | IGNORE_PLATFORM_DEPENDENCIES | (Optional) Whether to install platform dependencies or not. Default: `false`|
+| SCAN_DIRECTORY               | (Optional) Which directory to scan. This will override the default behavior of comparing only the changed files, and will instead scan this entire directory. |
 | EXCLUDE_EXPRESSION           | (Optional) A grep [regular expression](https://www.gnu.org/software/grep/manual/html_node/Basic-vs-Extended.html) to exclude files from standards testing|
 
 ## Development

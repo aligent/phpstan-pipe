@@ -8,7 +8,7 @@ validate() {
      DEBUG=${DEBUG:=false}
      SKIP_DEPENDENCIES=${SKIP_DEPENDENCIES:=false}
      LEVEL=${LEVEL:=0}
-     AUTOLOADER=${AUTOLOADER:="vendor/autoload.php"}
+     AUTOLOADER=${AUTOLOADER:="./vendor/autoload.php"}
      IGNORE_PLATFORM_DEPENDENCIES=${IGNORE_PLATFORM_DEPENDENCIES:=false}
 }
 
@@ -71,24 +71,27 @@ run_phpstan() {
      echo "Comparing HEAD against branch $TARGET_BRANCH"
      MERGE_BASE=$(git merge-base HEAD $TARGET_BRANCH)
 
-     CHANGED_FILES=$(git diff --relative --name-only --diff-filter=AM $MERGE_BASE -- '*.php' '*.phtml')
+     if [ ! -z "$SCAN_DIRECTORY" ]; then
+          phpstan analyse "$SCAN_DIRECTORY" --autoload-file="$AUTOLOADER" --error-format=junit --level="$LEVEL" > test-results/phpstan.xml || phpstan analyse "$SCAN_DIRECTORY" --autoload-file="$AUTOLOADER" --level="$LEVEL" && echo "No violations found"
+     else 
+          CHANGED_FILES=$(git diff --relative --name-only --diff-filter=AM $MERGE_BASE -- '*.php')
+          echo "Comparing HEAD against merge base $MERGE_BASE"
+          if [ ! -z "$EXCLUDE_EXPRESSION" ]; then
+               EXCLUDED_FILES=$(echo $CHANGED_FILES | tr " " "\n" | grep -E $EXCLUDE_EXPRESSION) || true
+               CHANGED_FILES=$(echo $CHANGED_FILES | tr " " "\n" | grep -vE $EXCLUDE_EXPRESSION) || true
+               echo "Excluding files:"
+               echo $EXCLUDED_FILES
+          fi
 
-     echo "Comparing HEAD against merge base $MERGE_BASE"
-     if [ ! -z "$EXCLUDE_EXPRESSION" ]; then
-          EXCLUDED_FILES=$(echo $CHANGED_FILES | tr " " "\n" | grep -E $EXCLUDE_EXPRESSION) || true
-          CHANGED_FILES=$(echo $CHANGED_FILES | tr " " "\n" | grep -vE $EXCLUDE_EXPRESSION) || true
-          echo "Excluding files:"
-          echo $EXCLUDED_FILES
-     fi
+          if [ -z "$CHANGED_FILES" ]; then
+               echo "No changed files to scan"
+          else
+               debug "Changed files: "
+               debug $CHANGED_FILES
+               mkdir -p test-results
 
-     if [ -z "$CHANGED_FILES" ]; then
-          echo "No changed files to scan"
-     else
-          debug "Changed files: "
-          debug $CHANGED_FILES
-          mkdir -p test-results
-
-          phpstan --autload-file $AUTOLOADER --error-format=junit --level=$LEVEL $CHANGED_FILES > test-results/phpstan.xml || phpstan --autload-file $AUTOLOADER --level=$LEVEL $CHANGED_FILES && echo "No violations found"
+               phpstan analyse "./app/code" --autoload-file="$AUTOLOADER" --error-format=junit --level="$LEVEL" > test-results/phpstan.xml || phpstan analyse "./app/code" --autoload-file="$AUTOLOADER" --level="$LEVEL" && echo "No violations found"
+          fi
      fi
 
      if [[ "$?" == "0" ]]; then
