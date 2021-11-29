@@ -13,8 +13,8 @@ Add the following your `bitbucket-pipelines.yml` file:
             - pipe: aligent/phpstan-pipe:latest
               variables:
                 SKIP_DEPENDENCIES: "false"
-                MAGENTO_USER: "USER"
-                MAGENTO_PASS: "PASS"
+                MAGENTO_USER: "${MAGENTO_USER}"
+                MAGENTO_PASS: "${MAGENTO_PASS}"
                 LEVEL: "0"
                 AUTOLOADER: "vendor/autoload.php"
                 IGNORE_PLATFORM_DEPENDENCIES: "false"
