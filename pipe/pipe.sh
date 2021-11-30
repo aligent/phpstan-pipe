@@ -90,7 +90,7 @@ run_phpstan() {
                debug $CHANGED_FILES
                mkdir -p test-results
 
-               phpstan analyse "./app/code" --autoload-file="$AUTOLOADER" --error-format=junit --level="$LEVEL" > test-results/phpstan.xml || phpstan analyse "./app/code" --autoload-file="$AUTOLOADER" --level="$LEVEL" && echo "No violations found"
+               phpstan analyse $CHANGED_FILES --autoload-file="$AUTOLOADER" --error-format=junit --level="$LEVEL" > test-results/phpstan.xml || phpstan analyse $CHANGED_FILES --autoload-file="$AUTOLOADER" --level="$LEVEL" && echo "No violations found"
           fi
      fi
 
