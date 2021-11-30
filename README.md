@@ -10,7 +10,7 @@ Add the following your `bitbucket-pipelines.yml` file:
       - step:
           name: "PHPStan check"
           script:
-            - pipe: aligent/phpstan-pipe:latest
+            - pipe: docker://aligent/phpstan-pipe:latest
               variables:
                 SKIP_DEPENDENCIES: "false"
                 MAGENTO_USER: "${MAGENTO_USER}"
@@ -19,6 +19,8 @@ Add the following your `bitbucket-pipelines.yml` file:
                 AUTOLOADER: "vendor/autoload.php"
                 IGNORE_PLATFORM_DEPENDENCIES: "false"
 ```
+
+We have docker images built for the following PHP Versions: 7.3, 7.4, 8.0
 ## Variables
 
 | Variable              | Usage                                                       |
