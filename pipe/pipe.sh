@@ -101,6 +101,12 @@ run_phpstan() {
      fi
 }
 
+git_allow_access() {
+     debug "Granting git safe access to bitbucket build directory..."
+     git config --global --add safe.directory /opt/atlassian/pipelines/agent/build
+}
+
+git_allow_access
 validate
 if [ $SKIP_DEPENDENCIES = false ]; then
      setup_ssh_creds

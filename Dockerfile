@@ -20,7 +20,7 @@ RUN wget -P / https://bitbucket.org/bitbucketpipelines/bitbucket-pipes-toolkit-b
 RUN chmod a+x /*.sh
 
 # Install phpstan globally
-RUN composer global require phpstan/phpstan:1.2.0 --prefer-dist \
+RUN composer global require phpstan/phpstan:1.6 --prefer-dist \
 	&& composer clear-cache
 
 VOLUME ["/app"]
