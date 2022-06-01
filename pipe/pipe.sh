@@ -102,8 +102,9 @@ run_phpstan() {
 }
 
 git_allow_access() {
-     debug "Granting git safe access to bitbucket build directory..."
+     debug "Granting git safe access to the directories owned by someone else ..."
      git config --global --add safe.directory /opt/atlassian/pipelines/agent/build
+     git config --global --add safe.directory /app
 }
 
 git_allow_access
