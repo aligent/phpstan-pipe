@@ -21,11 +21,15 @@ RUN pip3 install --no-cache --upgrade pip setuptools
 RUN composer global require phpstan/phpstan:1.7 --prefer-dist \
 	&& composer clear-cache
 
+# Allow git access to
+RUN git config --global --add safe.directory /build
+RUN git config --global --add safe.directory /opt/atlassian/pipelines/agent/build/
+
 ENV PYTHONUNBUFFERED=1
 
+COPY pipe pipe.yml /
+RUN chmod a+x /pipe.py
 COPY requirements.txt /
 RUN python3 -m pip install --no-cache-dir -r /requirements.txt
-COPY pipe /
-RUN chmod a+x /pipe.py
 
 ENTRYPOINT ["/pipe.py"]
