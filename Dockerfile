@@ -10,20 +10,22 @@ ENV COMPOSER_ALLOW_SUPERUSER 1
 ENV PATH /composer/vendor/bin:$PATH
 ENV PHP_CONF_DIR=/usr/local/etc/php/conf.d
 
-# Allow unlimited memory and add git for composer
+# Allow unlimited memory and install git for composer and python dependencies
 RUN echo "memory_limit=-1" > $PHP_CONF_DIR/99_memory-limit.ini \
-    && apk add --update --no-cache git wget jq openssh-client
-
-# Copy Bitbucket Pipeline script and dependencies
-COPY pipe /
-RUN wget -P / https://bitbucket.org/bitbucketpipelines/bitbucket-pipes-toolkit-bash/raw/0.4.0/common.sh
-RUN chmod a+x /*.sh
+    && apk add --update --no-cache git wget jq openssh-client python3 python3-dev gcc libffi-dev musl-dev \
+    && ln -sf python3 /usr/bin/python
+RUN python3 -m ensurepip
+RUN pip3 install --no-cache --upgrade pip setuptools
 
 # Install phpstan globally
 RUN composer global require phpstan/phpstan:1.7 --prefer-dist \
 	&& composer clear-cache
 
-VOLUME ["/app"]
-WORKDIR /app
+ENV PYTHONUNBUFFERED=1
 
-ENTRYPOINT ["/pipe.sh"]
+COPY requirements.txt /
+RUN python3 -m pip install --no-cache-dir -r /requirements.txt
+COPY pipe /
+RUN chmod a+x /pipe.py
+
+ENTRYPOINT ["/pipe.py"]
