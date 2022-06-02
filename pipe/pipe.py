@@ -15,13 +15,16 @@ from bitbucket_pipes_toolkit import Pipe, get_logger
 
 logger = get_logger()
 schema = {
-    'SKIP_DEPENDENCIES': {'type': 'string', 'required': False},
+    'SKIP_DEPENDENCIES': {'type': 'string', 'required': False, 'allowed': ['true', 'false']},
     'AUTOLOADER': {'type': 'string', 'required': False},
-    'IGNORE_PLATFORM_DEPENDENCIES': {'type': 'boolean', 'required': False},
+    'IGNORE_PLATFORM_DEPENDENCIES': {'type': 'string', 'required': False, 'allowed': ['true', 'false']},
     'LEVEL': {'type': 'integer', 'required': False, 'min': 1, 'max': 9},
     'EXCLUDE_EXPRESSION': {'type': 'string', 'required': False},
     'CONFIG_FILE': {'type': 'string', 'required': False},
+    'SCAN_DIRECTORY': {'type': 'string', 'required': False},
+    'DISABLE_REPORT': {'type': 'string', 'required': False, 'allowed': ['true', 'false']},
 }
+
 
 class PHPStan(Pipe):
 
@@ -29,16 +32,15 @@ class PHPStan(Pipe):
         super().__init__(*args, **kwargs)
 
         # Composer Configuration
-        self.skip_dependencies = True if self.get_variable(
-            'SKIP_DEPENDENCIES') else False
-        self.ignore_platform_dependencies = True if self.get_variable(
-            'IGNORE_PLATFORM_DEPENDENCIES') else False
+        self.skip_dependencies = self.get_variable('SKIP_DEPENDENCIES') == 'true'
+        self.ignore_platform_dependencies = self.get_variable('IGNORE_PLATFORM_DEPENDENCIES') == 'true'
 
         # PHPStan Configuration
         self.config_file = self.get_variable('CONFIG_FILE')
         self.autoloader = self.get_variable('AUTOLOADER')
         self.level = self.get_variable('LEVEL')
         self.exclude_expression = self.get_variable('EXCLUDE_EXPRESSION')
+        self.scan_directory = self.get_variable('SCAN_DIRECTORY')
 
         # Bitbucket Configuration
         self.bitbucket_workspace = os.getenv('BITBUCKET_WORKSPACE')
@@ -46,6 +48,9 @@ class PHPStan(Pipe):
         self.bitbucket_pipeline_uuid = os.getenv('BITBUCKET_PIPELINE_UUID')
         self.bitbucket_step_uuid = os.getenv('BITBUCKET_STEP_UUID')
         self.bitbucket_commit = os.getenv('BITBUCKET_COMMIT')
+
+        # Enable/Disable Bitbucket reporting
+        self.disable_report = self.get_variable('DISABLE_REPORT') == 'true'
 
     def setup_ssh_credentials(self):
         ssh_dir = os.path.expanduser("~/.ssh/")
@@ -79,29 +84,30 @@ class PHPStan(Pipe):
         if os.getenv("BITBUCKET_PR_DESTINATION_BRANCH"):
             target_branch = f"origin/{os.getenv('BITBUCKET_PR_DESTINATION_BRANCH')}"
 
-        self.log_info(f"Comparing HEAD against branch {target_branch}")
-
         # Output is terminated with newline char, remove it.
-        merge_base = subprocess.check_output(["git",
-                                              "merge-base",
-                                              "HEAD",
-                                              target_branch
-                                              ]).decode(sys.stdout.encoding)[:-1]
-
-        changed_files = subprocess.check_output(["git",
-                                                "diff",
-                                                 "--relative",
-                                                 "--name-only",
-                                                 "--diff-filter=AM",
-                                                 merge_base,
-                                                 "--",
-                                                 "*.php"
-                                                 ]).decode(sys.stdout.encoding).split('\n')
+        if self.scan_directory is None:
+          self.log_info(f"Comparing HEAD against branch {target_branch}")
+          merge_base = subprocess.check_output(["git",
+                                                "merge-base",
+                                                "HEAD",
+                                                target_branch
+                                                ]).decode(sys.stdout.encoding)[:-1]
+          self.log_info(f"Comparing HEAD against merge base {merge_base}")
+          changed_files = subprocess.check_output(["git",
+                                                  "diff",
+                                                   "--relative",
+                                                   "--name-only",
+                                                   "--diff-filter=AM",
+                                                   merge_base,
+                                                   "--",
+                                                   "*.php"
+                                                   ]).decode(sys.stdout.encoding).split('\n')
+        else:
+          changed_files = [self.scan_directory]
 
         # Filter empty strings
         changed_files = list(filter(None, changed_files))
 
-        self.log_info(f"Comparing HEAD against merge base {merge_base}")
         if self.exclude_expression:
             def filter_paths(path):
                 match = re.search(self.exclude_expression, path)
@@ -124,22 +130,26 @@ class PHPStan(Pipe):
         if not os.path.exists("test-results"):
             os.mkdir("test-results")
 
-        phpstan_command = ["/composer/vendor/bin/phpstan",
-                        changed_files,
-                         "-error-format=junit",
-                         ]
+        phpstan_command = ["/composer/vendor/bin/phpstan", "analyse"] + changed_files
+
+        phpstan_command.append("--error-format=junit")
 
         if self.config_file:
           phpstan_command.append(f"--configuration={self.config_file}")
 
         if self.autoloader:
           phpstan_command.append(f"--autoload-file={self.autoloader}")
+        else:
+          phpstan_command.append(f"--autoload-file=vendor/autoload.php")
 
         if self.level:
           phpstan_command.append(f"--level={self.level}")
 
-        phpstan = subprocess.run(phpstan_command, stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE, universal_newlines=True)
+        phpstan = subprocess.run(
+          args=phpstan_command,
+          capture_output=True,
+          universal_newlines=True)
+
         self.failure = False if phpstan.returncode == 0 else True
 
         phpstan_output = phpstan.stdout
@@ -244,7 +254,9 @@ class PHPStan(Pipe):
             self.setup_ssh_credentials()
             self.composer_install()
         self.run_phpstan()
-        self.upload_report()
+
+        if not self.disable_report:
+          self.upload_report()
 
         if self.failure:
             self.fail(message=f"Failed PHPStan")
