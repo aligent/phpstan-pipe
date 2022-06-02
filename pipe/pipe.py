@@ -150,7 +150,7 @@ class PHPStan(Pipe):
           capture_output=True,
           universal_newlines=True)
 
-        self.failure = False if phpstan.returncode == 0 else True
+        self.failure = phpstan.returncode != 0
 
         phpstan_output = phpstan.stdout
 
