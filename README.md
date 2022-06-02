@@ -20,7 +20,7 @@ Add the following your `bitbucket-pipelines.yml` file:
                 IGNORE_PLATFORM_DEPENDENCIES: "false"
 ```
 
-We have docker images built for the following PHP Versions: 7.3, 7.4, 8.0
+We have docker images built for the following PHP Versions: 7.3, 7.4, 8.0, 8.1
 ## Variables
 
 | Variable              | Usage                                                       |
@@ -39,7 +39,7 @@ We have docker images built for the following PHP Versions: 7.3, 7.4, 8.0
 
 The following command can be used to invoke the pipe locally:
 ```
-docker run -v $PWD:/app aligent/phpstan-pipe:latest
+docker run -v $PWD:/app aligent/phpstan-pipe:<PHP-Version>
 ```
 
 Commits published to the `main` branch  will trigger an automated build for the each of the configured PHP version.
