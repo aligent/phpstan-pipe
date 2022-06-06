@@ -24,7 +24,7 @@ RUN composer global require phpstan/phpstan:1.7 --prefer-dist \
 # Allow git access to mounted build directories
 RUN git config --global --add safe.directory /build
 RUN mkdir -p /opt/atlassian/pipelines/agent/build
-RUN git config --global --add safe.directory /opt/atlassian/pipelines/agent/build/
+RUN git config --global --add safe.directory /opt/atlassian/pipelines/agent/build
 
 ENV PYTHONUNBUFFERED=1
 
