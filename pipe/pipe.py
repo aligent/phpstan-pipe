@@ -23,6 +23,7 @@ schema = {
     'CONFIG_FILE': {'type': 'string', 'required': False},
     'SCAN_DIRECTORY': {'type': 'string', 'required': False},
     'DISABLE_REPORT': {'type': 'string', 'required': False, 'allowed': ['true', 'false']},
+    'DEBUG': {'type': 'boolean', 'required': False}
 }
 
 
@@ -145,6 +146,8 @@ class PHPStan(Pipe):
         if self.level:
           phpstan_command.append(f"--level={self.level}")
 
+        self.log_debug(f'Executing PHPStan command {phpstan_command}')
+
         phpstan = subprocess.run(
           args=phpstan_command,
           capture_output=True,
@@ -164,6 +167,8 @@ class PHPStan(Pipe):
         if self.ignore_platform_dependencies:
           composer_install_command.append('--ignore-platform-dependencies')
 
+        self.log_debug(f'Executing Composer command {composer_install_command}')
+
         composer_install = subprocess.run(composer_install_command)
         composer_install.check_returncode()
 
@@ -173,26 +178,22 @@ class PHPStan(Pipe):
             from junitparser import JUnitXml
 
             results = []
-            xml = JUnitXml.fromfile(file)
-            if not xml.failures:
+            suite = JUnitXml.fromfile(file)
+            if not suite.failures:
                 return []
-            for suite in xml:
-                # handle suites
-                if suite.failures == 0:
-                    continue
-                for case in suite:
-                    for result in case.result:
-                        # Covert paths to relative equivalent
-                        workspace_path = "/opt/atlassian/pipelines/agent/build/"
-                        path = suite.name.replace(workspace_path, '')
-                        results.append({
-                            "path": path,
-                            "title": case.name,
-                            "summary": result.message,
-                            # Extract line number from name
-                            # Example: /some/path/to/file (10:11)
-                            "line": re.search("\((\d*):.*\)", case.name).group(1)
-                        })
+            for case in suite:
+                  for result in case.result:
+                      # Covert paths to relative equivalent
+                      workspace_path = "/opt/atlassian/pipelines/agent/build/"
+                      path = suite.name.replace(workspace_path, '')
+                      results.append({
+                          "path": path,
+                          "title": case.name,
+                          "summary": result.message,
+                          # Extract line number from name
+                          # Example: /some/path/to/file (10:11)
+                          "line": re.search("\((\d*):.*\)", case.name).group(1)
+                      })
 
             return results
 
@@ -251,11 +252,18 @@ class PHPStan(Pipe):
     def run(self):
         super().run()
         if not self.skip_dependencies:
+            self.log_debug("Setting up ssh credentials.")
             self.setup_ssh_credentials()
+            self.log_debug("Installing Dependencies.")
             self.composer_install()
+        else:
+            self.log_debug("Skipping dependency installation.")
+
+        self.log_debug("Running PHPStan.")
         self.run_phpstan()
 
         if not self.disable_report:
+          self.log_debug("Uploading test results to Bitbucket.")
           self.upload_report()
 
         if self.failure:
