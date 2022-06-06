@@ -185,7 +185,7 @@ class PHPStan(Pipe):
                   for result in case.result:
                       # Covert paths to relative equivalent
                       workspace_path = "/opt/atlassian/pipelines/agent/build/"
-                      path = suite.name.replace(workspace_path, '')
+                      path = case.name.replace(workspace_path, '')
                       results.append({
                           "path": path,
                           "title": case.name,
@@ -219,8 +219,8 @@ class PHPStan(Pipe):
             failures = read_failures_from_file(f"test-results/phpstan.xml")
 
         bitbucket_api.create_report(
-            "Code standards report",
-            "Results producced by runing phpstan against updated files",
+            "PHPStan report",
+            "Results produced by running PHPStan against updated files",
             "SECURITY",
             report_id,
             "phpstan-pipe",
