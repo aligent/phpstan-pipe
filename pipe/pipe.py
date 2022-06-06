@@ -192,7 +192,8 @@ class PHPStan(Pipe):
                           "summary": result.message,
                           # Extract line number from name
                           # Example: /some/path/to/file (10:11)
-                          "line": re.search("\((\d*):.*\)", case.name).group(1)
+                          # src/AppKernel.php:42
+                          "line": re.search("\.*:(\d*)\", case.name).group(1)
                       })
 
             return results
