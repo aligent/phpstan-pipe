@@ -187,7 +187,7 @@ class PHPStan(Pipe):
                       workspace_path = "/opt/atlassian/pipelines/agent/build/"
                       path = case.name.replace(workspace_path, '')
                       results.append({
-                          "path": path,
+                          "path": re.search("(.*\.php):\d*", path).group(1),
                           "title": case.name,
                           "summary": result.message,
                           # Extract line number from name
