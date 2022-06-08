@@ -1,5 +1,5 @@
 name: Aligent PHPStan Pipe
-image: aligent/phpstan-pipe:latest
+image: aligent/phpstan-pipe:8.0
 description: This pipe is used to run phpstan checks
 repository: git@bitbucket.org:aligent/aligent-phpstan-pipe.git 
 maintainer: adam.hall@aligent.com.au
