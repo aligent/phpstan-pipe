@@ -212,7 +212,7 @@ class PHPStan(Pipe):
         report_id = str(uuid.uuid4())
 
         bitbucket_api = Bitbucket(
-            proxies={"https": 'https://host.docker.internal:29418'})
+            proxies={"https": 'http://host.docker.internal:29418'})
 
         failures = []
         if os.path.exists("test-results/phpstan.xml"):
