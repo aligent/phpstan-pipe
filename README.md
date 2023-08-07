@@ -35,7 +35,7 @@ We have docker images built for the following PHP Versions: 7.3, 7.4, 8.0, 8.1
 
 The following command can be used to invoke the pipe locally:
 ```
-docker run -it --env="SKIP_DEPENDENCIES=true" --env="AUTOLOADER=vendor/autoload.php" --env="LEVEL=9" --env="BITBUCKET_PR_DESTINATION_BRANCH=<DESTINATION_BRANCH" --env="DISABLE_REPORT=true" -v $PWD:/build --workdir=/build aligent/phpstan:<PHP-Version>
+docker run -it --env="SKIP_DEPENDENCIES=true" --env="AUTOLOADER=vendor/autoload.php" --env="LEVEL=9" --env="BITBUCKET_PR_DESTINATION_BRANCH=<DESTINATION_BRANCH>" --env="DISABLE_REPORT=true" -v $PWD:/build --workdir=/build aligent/phpstan-pipe:<PHP-Version>
 ```
 
 Commits published to the `main` branch  will trigger an automated build for each of the configured PHP version.
