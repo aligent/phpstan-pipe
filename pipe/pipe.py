@@ -222,6 +222,7 @@ class PHPStan(Pipe):
         self.log_debug(f"bitbucket_workspace: {self.bitbucket_workspace}")
         self.log_debug(f"bitbucket_repo_slug: {self.bitbucket_repo_slug}")
         self.log_debug(f"bitbucket_commit: {self.bitbucket_commit}")
+        self.log_debug(f"bitbucket_step_uuid: {self.bitbucket_step_uuid}")
         self.log_debug(f"link: https://bitbucket.org/{self.bitbucket_workspace}/{self.bitbucket_repo_slug}/addon/pipelines/home#!/results/{self.bitbucket_pipeline_uuid}/steps/{self.bitbucket_step_uuid}/test-report")
 
         bitbucket_api.create_report(
