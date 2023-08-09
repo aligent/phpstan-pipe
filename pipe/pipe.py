@@ -218,6 +218,13 @@ class PHPStan(Pipe):
         if os.path.exists("test-results/phpstan.xml"):
             failures = read_failures_from_file(f"test-results/phpstan.xml")
 
+        self.log_debug("bitbucket_workspace: ", bitbucket_workspace)
+        self.log_debug("bitbucket_repo_slug: ", bitbucket_repo_slug)
+        self.log_debug("bitbucket_commit: ", bitbucket_commit)
+        self.log_debug("bitbucket_step_uuid: ", bitbucket_step_uuid)
+        self.log_debug("bitbucket_pipeline_uuid: ", bitbucket_pipeline_uuid)
+        self.log_debug("link: ", f"\"text\": \"Link text here\", \"href\":\"https://bitbucket.org/{self.bitbucket_workspace}/{self.bitbucket_repo_slug}/addon/pipelines/home#!/results/{self.bitbucket_pipeline_uuid}/steps/{self.bitbucket_step_uuid}/test-report\"")
+
         bitbucket_api.create_report(
             "PHPStan report",
             "Results produced by running PHPStan against updated files",
