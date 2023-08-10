@@ -38,7 +38,7 @@ class PHPStan(Pipe):
 
         # PHPStan Configuration
         self.config_file = self.get_variable('CONFIG_FILE')
-        self.autoloader = self.get_variable('AUTOLOADER')
+        self.autoloader = self.get_variable('AUTOLOADER') or "vendor/autoload.php"
         self.level = self.get_variable('LEVEL')
         self.exclude_expression = self.get_variable('EXCLUDE_EXPRESSION')
         self.scan_directory = self.get_variable('SCAN_DIRECTORY')
@@ -138,10 +138,11 @@ class PHPStan(Pipe):
         if self.config_file:
           phpstan_command.append(f"--configuration={self.config_file}")
 
-        if self.autoloader and not self.skip_dependencies:
+        # skip_dependencies implies no composer install, i.e. no vendor/autoload.php
+        if not self.skip_dependencies:
           phpstan_command.append(f"--autoload-file={self.autoloader}")
-        else:
-          phpstan_command.append(f"--autoload-file=vendor/autoload.php")
+        # else:
+        #   phpstan_command.append(f"--autoload-file=vendor/autoload.php")
 
         if self.level:
           phpstan_command.append(f"--level={self.level}")
