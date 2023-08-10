@@ -163,7 +163,9 @@ class PHPStan(Pipe):
         if phpstan_output:
             with open("test-results/phpstan.xml", 'a') as output_file:
                 output_file.write(phpstan_output)
-                reportfilecontent = output_file.read()
+
+            with open("test-results/phpstan.xml", 'r') as file:
+                reportfilecontent = file.read() 
                 self.log_debug("content of the report file: " + reportfilecontent)
 
          
