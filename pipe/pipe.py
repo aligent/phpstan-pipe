@@ -167,6 +167,7 @@ class PHPStan(Pipe):
             with open("test-results/phpstan.xml", 'r') as file:
                 reportfilecontent = file.read() 
                 self.log_debug("content of the report file: " + reportfilecontent)
+                self.log_debug("return code: " + phpstan.returncode)
 
          
     def composer_install(self):
