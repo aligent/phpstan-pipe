@@ -158,6 +158,10 @@ class PHPStan(Pipe):
             print('stdout: {}'.format(e.output.decode(sys.getfilesystemencoding())))
             print('stderr: {}'.format(e.stderr.decode(sys.getfilesystemencoding())))
 
+        self.log_debug("phpstan.stdout: " + phpstan.stdout)
+        self.log_debug("phpstan.stderr: " + phpstan.stderr)
+        self.log_debug("phpstan.returncode: " + phpstan.returncode)
+
         self.failure = phpstan.returncode != 0
 
         phpstan_output = phpstan.stdout
