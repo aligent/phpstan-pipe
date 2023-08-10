@@ -1,5 +1,5 @@
 ARG PHP_VERSION
-FROM php:${PHP_VERSION}-cli-alpine3.16
+FROM php:${PHP_VERSION}-cli-alpine
 
 # Fetch the latest version of composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer

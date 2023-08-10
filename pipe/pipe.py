@@ -148,15 +148,10 @@ class PHPStan(Pipe):
 
         self.log_debug(f'Executing PHPStan command {phpstan_command}')
 
-        try:
-            phpstan = subprocess.run(
-            args=phpstan_command,
-            capture_output=True,
-            universal_newlines=True)
-        except subprocess.CalledProcessError as e:
-            print('exit code: {}'.format(e.returncode))
-            print('stdout: {}'.format(e.output.decode(sys.getfilesystemencoding())))
-            print('stderr: {}'.format(e.stderr.decode(sys.getfilesystemencoding())))
+        phpstan = subprocess.run(
+        args=phpstan_command,
+        capture_output=True,
+        universal_newlines=True)
 
         self.log_debug("phpstan.stdout: " + phpstan.stdout)
         self.log_debug("phpstan.stderr: " + phpstan.stderr)
