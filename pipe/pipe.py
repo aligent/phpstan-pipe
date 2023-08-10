@@ -157,6 +157,8 @@ class PHPStan(Pipe):
 
         phpstan_output = phpstan.stdout
 
+        self.log_debug("phpstan_output: " + phpstan_output)
+
         if phpstan_output:
             with open("test-results/phpstan.xml", 'a') as output_file:
                 output_file.write(phpstan_output)
