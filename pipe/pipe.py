@@ -157,12 +157,16 @@ class PHPStan(Pipe):
 
         phpstan_output = phpstan.stdout
 
-        self.log_debug("phpstan_output: " + phpstan_output)
+        # self.log_debug("phpstan_output: " + phpstan_output)
+        # sleep(10)
 
         if phpstan_output:
             with open("test-results/phpstan.xml", 'a') as output_file:
                 output_file.write(phpstan_output)
+                reportfilecontent = output_file.read()
+                self.log_debug("content of the report file: " + reportfilecontent)
 
+         
     def composer_install(self):
         composer_install_command = ["composer", "install", "--dev"]
 
