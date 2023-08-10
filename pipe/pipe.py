@@ -138,7 +138,7 @@ class PHPStan(Pipe):
         if self.config_file:
           phpstan_command.append(f"--configuration={self.config_file}")
 
-        if self.autoloader and ! self.skip_dependencies:
+        if self.autoloader and not self.skip_dependencies:
           phpstan_command.append(f"--autoload-file={self.autoloader}")
         else:
           phpstan_command.append(f"--autoload-file=vendor/autoload.php")
