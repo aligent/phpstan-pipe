@@ -148,17 +148,19 @@ class PHPStan(Pipe):
 
         self.log_debug(f'Executing PHPStan command {phpstan_command}')
 
-        phpstan = subprocess.run(
-          args=phpstan_command,
-          capture_output=True,
-          universal_newlines=True)
+        try:
+            phpstan = subprocess.run(
+            args=phpstan_command,
+            capture_output=True,
+            universal_newlines=True)
+        except subprocess.CalledProcessError as e:
+            print('exit code: {}'.format(e.returncode))
+            print('stdout: {}'.format(e.output.decode(sys.getfilesystemencoding())))
+            print('stderr: {}'.format(e.stderr.decode(sys.getfilesystemencoding())))
 
         self.failure = phpstan.returncode != 0
 
         phpstan_output = phpstan.stdout
-
-        # self.log_debug("phpstan_output: " + phpstan_output)
-        # sleep(10)
 
         if phpstan_output:
             with open("test-results/phpstan.xml", 'a') as output_file:
