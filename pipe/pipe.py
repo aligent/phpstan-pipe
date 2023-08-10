@@ -156,7 +156,7 @@ class PHPStan(Pipe):
 
         self.log_debug("phpstan.stdout: " + phpstan.stdout)
         self.log_debug("phpstan.stderr: " + phpstan.stderr)
-        self.log_debug("phpstan.returncode: " + phpstan.returncode)
+        self.log_debug("phpstan.returncode: " + str(phpstan.returncode))
 
         self.failure = phpstan.returncode != 0
 
