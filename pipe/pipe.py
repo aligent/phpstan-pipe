@@ -15,9 +15,9 @@ from bitbucket_pipes_toolkit import Pipe, get_logger
 
 logger = get_logger()
 schema = {
-    'SKIP_DEPENDENCIES': {'type': 'string', 'required': False, 'allowed': ['true', 'false']},
+    # 'SKIP_DEPENDENCIES': {'type': 'string', 'required': False, 'allowed': ['true', 'false']},
     'AUTOLOADER': {'type': 'string', 'required': False},
-    'IGNORE_PLATFORM_DEPENDENCIES': {'type': 'string', 'required': False, 'allowed': ['true', 'false']},
+    # 'IGNORE_PLATFORM_DEPENDENCIES': {'type': 'string', 'required': False, 'allowed': ['true', 'false']},
     'LEVEL': {'type': 'integer', 'required': False, 'min': 1, 'max': 9},
     'EXCLUDE_EXPRESSION': {'type': 'string', 'required': False},
     'CONFIG_FILE': {'type': 'string', 'required': False},
@@ -26,15 +26,10 @@ schema = {
     'DEBUG': {'type': 'boolean', 'required': False}
 }
 
-
 class PHPStan(Pipe):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        # Composer Configuration
-        self.skip_dependencies = self.get_variable('SKIP_DEPENDENCIES') == 'true'
-        self.ignore_platform_dependencies = self.get_variable('IGNORE_PLATFORM_DEPENDENCIES') == 'true'
 
         # PHPStan Configuration
         self.config_file = self.get_variable('CONFIG_FILE')
@@ -158,6 +153,10 @@ class PHPStan(Pipe):
         self.log_debug("phpstan.stderr: " + phpstan.stderr)
         self.log_debug("phpstan.returncode: " + str(phpstan.returncode))
 
+        self.log_debug("phpstan.stdout: " + phpstan.stdout)
+        self.log_debug("phpstan.stderr: " + phpstan.stderr)
+        self.log_debug("phpstan.returncode: " + str(phpstan.returncode))
+
         self.failure = phpstan.returncode != 0
 
         phpstan_output = phpstan.stdout
@@ -170,18 +169,6 @@ class PHPStan(Pipe):
                 reportfilecontent = file.read() 
                 self.log_debug("content of the report file: " + reportfilecontent)
                 self.log_debug("return code: " + str(phpstan.returncode))
-
-         
-    def composer_install(self):
-        composer_install_command = ["composer", "install", "--dev"]
-
-        if self.ignore_platform_dependencies:
-          composer_install_command.append('--ignore-platform-dependencies')
-
-        self.log_debug(f'Executing Composer command {composer_install_command}')
-
-        composer_install = subprocess.run(composer_install_command)
-        composer_install.check_returncode()
 
     def upload_report(self):
         # Parses a Junit file and returns all errors
@@ -271,13 +258,6 @@ class PHPStan(Pipe):
 
     def run(self):
         super().run()
-        if not self.skip_dependencies:
-            self.log_debug("Setting up ssh credentials.")
-            self.setup_ssh_credentials()
-            self.log_debug("Installing Dependencies.")
-            self.composer_install()
-        else:
-            self.log_debug("Skipping dependency installation.")
 
         self.log_debug("Running PHPStan.")
         self.run_phpstan()
