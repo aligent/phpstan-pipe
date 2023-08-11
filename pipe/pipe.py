@@ -33,7 +33,7 @@ class PHPStan(Pipe):
 
         # PHPStan Configuration
         self.config_file = self.get_variable('CONFIG_FILE')
-        self.autoloader = self.get_variable('AUTOLOADER') or "vendor/autoload.php"
+        self.autoloader = self.get_variable('AUTOLOADER')
         self.level = self.get_variable('LEVEL')
         self.exclude_expression = self.get_variable('EXCLUDE_EXPRESSION')
         self.scan_directory = self.get_variable('SCAN_DIRECTORY')
@@ -133,11 +133,10 @@ class PHPStan(Pipe):
         if self.config_file:
           phpstan_command.append(f"--configuration={self.config_file}")
 
-        # skip_dependencies implies no composer install, i.e. no vendor/autoload.php
-        if not self.skip_dependencies:
+        if self.autoloader:
           phpstan_command.append(f"--autoload-file={self.autoloader}")
-        # else:
-        #   phpstan_command.append(f"--autoload-file=vendor/autoload.php")
+        else:
+          phpstan_command.append(f"--autoload-file=vendor/autoload.php")
 
         if self.level:
           phpstan_command.append(f"--level={self.level}")
@@ -145,13 +144,9 @@ class PHPStan(Pipe):
         self.log_debug(f'Executing PHPStan command {phpstan_command}')
 
         phpstan = subprocess.run(
-        args=phpstan_command,
-        capture_output=True,
-        universal_newlines=True)
-
-        self.log_debug("phpstan.stdout: " + phpstan.stdout)
-        self.log_debug("phpstan.stderr: " + phpstan.stderr)
-        self.log_debug("phpstan.returncode: " + str(phpstan.returncode))
+          args=phpstan_command,
+          capture_output=True,
+          universal_newlines=True)
 
         self.log_debug("phpstan.stdout: " + phpstan.stdout)
         self.log_debug("phpstan.stderr: " + phpstan.stderr)
@@ -166,7 +161,7 @@ class PHPStan(Pipe):
                 output_file.write(phpstan_output)
 
             with open("test-results/phpstan.xml", 'r') as file:
-                reportfilecontent = file.read() 
+                reportfilecontent = file.read()
                 self.log_debug("content of the report file: " + reportfilecontent)
                 self.log_debug("return code: " + str(phpstan.returncode))
 
