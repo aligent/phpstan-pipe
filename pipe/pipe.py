@@ -15,9 +15,7 @@ from bitbucket_pipes_toolkit import Pipe, get_logger
 
 logger = get_logger()
 schema = {
-    # 'SKIP_DEPENDENCIES': {'type': 'string', 'required': False, 'allowed': ['true', 'false']},
     'AUTOLOADER': {'type': 'string', 'required': False},
-    # 'IGNORE_PLATFORM_DEPENDENCIES': {'type': 'string', 'required': False, 'allowed': ['true', 'false']},
     'LEVEL': {'type': 'integer', 'required': False, 'min': 1, 'max': 9},
     'EXCLUDE_EXPRESSION': {'type': 'string', 'required': False},
     'CONFIG_FILE': {'type': 'string', 'required': False},
@@ -257,9 +255,11 @@ class PHPStan(Pipe):
         self.log_debug("Running PHPStan.")
         self.run_phpstan()
 
-        if not self.disable_report:
-          self.log_debug("Uploading test results to Bitbucket.")
-          self.upload_report()
+        if not self.disable_report and self.failure:
+            self.log_debug("Uploading test results to Bitbucket.")
+            self.upload_report()
+        else:
+            self.log_debug("Nothing to upload to Bitbucket.")
 
         if self.failure:
             self.fail(message=f"Failed PHPStan")
