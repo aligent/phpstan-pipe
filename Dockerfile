@@ -36,4 +36,4 @@ WORKDIR /venv
 RUN python3 -m venv /venv
 RUN . /venv/bin/activate && pip install --no-cache-dir -r requirements.txt
 ENV PATH="/venv/bin:$PATH"
-ENTRYPOINT ["./pipe.py"]
+ENTRYPOINT ["/venv/pipe.py"]
