@@ -18,7 +18,7 @@ RUN python3 -m ensurepip
 RUN pip3 install --no-cache --upgrade pip setuptools
 
 # Install phpstan globally
-RUN composer global require phpstan/phpstan:1.8 --prefer-dist \
+RUN composer global require phpstan/phpstan:1.11 --prefer-dist \
 	&& composer clear-cache
 
 # Allow git access to mounted build directories
