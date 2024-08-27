@@ -39,9 +39,15 @@ class PHPStan(Pipe):
         # Bitbucket Configuration
         self.bitbucket_workspace = os.getenv('BITBUCKET_WORKSPACE')
         self.bitbucket_repo_slug = os.getenv('BITBUCKET_REPO_SLUG')
-        self.bitbucket_pipeline_uuid = os.getenv('BITBUCKET_PIPELINE_UUID').strip("{}")
-        self.bitbucket_step_uuid = os.getenv('BITBUCKET_STEP_UUID').strip("{}")
+        self.bitbucket_pipeline_uuid = os.getenv('BITBUCKET_PIPELINE_UUID')
+        self.bitbucket_step_uuid = os.getenv('BITBUCKET_STEP_UUID')
         self.bitbucket_commit = os.getenv('BITBUCKET_COMMIT')
+
+        if self.bitbucket_pipeline_uuid is not None: 
+            self.bitbucket_pipeline_uuid = self.bitbucket_pipeline_uuid.strip("{}")
+
+        if self.bitbucket_step_uuid is not None: 
+            self.bitbucket_step_uuid = self.bitbucket_step_uuid.strip("{}")
 
         # Enable/Disable Bitbucket reporting
         self.disable_report = self.get_variable('DISABLE_REPORT') == 'true'
@@ -178,12 +184,12 @@ class PHPStan(Pipe):
                       workspace_path = "/opt/atlassian/pipelines/agent/build/"
                       path = case.name.replace(workspace_path, '')
                       results.append({
-                          "path": re.search("(.*\.php):\d*", path).group(1),
+                          "path": re.search(r'(.*.php):\d*', path).group(1),
                           "title": case.name,
                           "summary": result.message,
                           # Extract line number from name
                           # Example: src/AppKernel.php:42
-                          "line": re.search("\.*:(\d*)", case.name).group(1)
+                          "line": re.search(r'.*:(\d*)', case.name).group(1)
                       })
 
             return results

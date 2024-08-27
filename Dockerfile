@@ -14,8 +14,6 @@ ENV PHP_CONF_DIR=/usr/local/etc/php/conf.d
 RUN echo "memory_limit=-1" > $PHP_CONF_DIR/99_memory-limit.ini \
     && apk add --update --no-cache git wget jq openssh-client python3 python3-dev gcc libffi-dev musl-dev \
     && ln -sf python3 /usr/bin/python
-RUN python3 -m ensurepip
-RUN pip3 install --no-cache --upgrade pip setuptools
 
 # Install phpstan globally
 RUN composer global require phpstan/phpstan:1.11 --prefer-dist \
@@ -28,9 +26,14 @@ RUN git config --global --add safe.directory /opt/atlassian/pipelines/agent/buil
 
 ENV PYTHONUNBUFFERED=1
 
-COPY pipe pipe.yml /
-RUN chmod a+x /pipe.py
-COPY requirements.txt /
-RUN python3 -m pip install --no-cache-dir -r /requirements.txt
+COPY pipe /venv/
+COPY pipe.yml /
+RUN chmod a+x /venv/pipe.py
+COPY requirements.txt /venv/
 
-ENTRYPOINT ["/pipe.py"]
+WORKDIR /venv
+
+RUN python3 -m venv /venv
+RUN . /venv/bin/activate && pip install --no-cache-dir -r requirements.txt
+ENV PATH="/venv/bin:$PATH"
+ENTRYPOINT ["/venv/pipe.py"]
