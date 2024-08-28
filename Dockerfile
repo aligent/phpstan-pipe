@@ -16,7 +16,7 @@ RUN echo "memory_limit=-1" > $PHP_CONF_DIR/99_memory-limit.ini \
     && ln -sf python3 /usr/bin/python
 
 # Install phpstan globally
-RUN composer global require phpstan/phpstan:1.11 --prefer-dist \
+RUN composer global require phpstan/phpstan:1.11.* --prefer-dist \
 	&& composer clear-cache
 
 # Allow git access to mounted build directories
