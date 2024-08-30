@@ -130,8 +130,17 @@ class PHPStan(Pipe):
         if not os.path.exists("test-results"):
             os.mkdir("test-results")
 
-        phpstan_command = ["/composer/vendor/bin/phpstan", "analyse"] + changed_files
+        phpstan_command = ["analyse"]
 
+        # If a local copy of phpstan exists use that, otherwise fallback to the global version
+        if os.path.isfile("vendor/bin/phpstan"):
+            self.log_debug("Local installation of PHPStan found.")
+            phpstan_command = ["vendor/bin/phpstan"] + phpstan_command
+        else: 
+            self.log_debug("Falling back to global PHPStan installation.")
+            phpstan_command = ["/composer/vendor/bin/phpstan"] + phpstan_command
+
+        phpstan_command = phpstan_command + changed_files
         phpstan_command.append("--error-format=junit")
 
         if self.config_file:
