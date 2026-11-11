@@ -10,7 +10,7 @@ Add the following your `bitbucket-pipelines.yml` file:
       - step:
           name: "PHPStan check"
           script:
-            - pipe: docker://aligent/phpstan-pipe:latest
+            - pipe: docker://ghcr.io/aligent/phpstan-pipe:8.4
               variables:
                 SKIP_DEPENDENCIES: "false"
                 LEVEL: "0"
@@ -18,7 +18,7 @@ Add the following your `bitbucket-pipelines.yml` file:
                 IGNORE_PLATFORM_DEPENDENCIES: "false"
 ```
 
-We have docker images built for the following PHP Versions: 7.3, 7.4, 8.0, 8.1
+We have docker images built for the following PHP Versions: 8.1, 8.2, 8.3, 8.4
 ## Variables
 
 | Variable                     | Usage                                                                                                                                                       |
@@ -35,8 +35,15 @@ We have docker images built for the following PHP Versions: 7.3, 7.4, 8.0, 8.1
 
 The following command can be used to invoke the pipe locally:
 ```
-docker run -it --env="SKIP_DEPENDENCIES=true" --env="AUTOLOADER=vendor/autoload.php" --env="LEVEL=9" --env="BITBUCKET_PR_DESTINATION_BRANCH=<DESTINATION_BRANCH" --env="DISABLE_REPORT=true" -v $PWD:/build --workdir=/build aligent/phpstan:<PHP-Version>
+docker run -it --env="SKIP_DEPENDENCIES=true" --env="AUTOLOADER=vendor/autoload.php" --env="LEVEL=9" --env="BITBUCKET_PR_DESTINATION_BRANCH=<DESTINATION_BRANCH" --env="DISABLE_REPORT=true" -v $PWD:/build --workdir=/build ghcr.io/aligent/phpstan-pipe:<PHP-Version>
 ```
 
-Commits published to the `main` branch  will trigger an automated build for each of the configured PHP version.
-Commits to `staging` will do the same but image tags will be suffixed with `-experimiental`.
+## CI/CD
+
+Docker images are built and pushed to GitHub Container Registry (`ghcr.io/aligent/phpstan-pipe`) via GitHub Actions
+(`.github/workflows/docker-build.yml`, using the shared `aligent/workflows` Docker build workflow). The workflow:
+
+- Builds an image for every configured PHP version, tagged `<PHP_VERSION>`
+- Pushes images on commits to `main`; commits to `staging` push tags suffixed with `-experimental`
+- Builds without pushing on pull requests
+- Can be triggered manually
