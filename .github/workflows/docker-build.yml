@@ -1,0 +1,38 @@
+name: Build and Push Docker Image
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - staging
+  workflow_dispatch:
+
+concurrency:
+  group: docker-build-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    name: PHP ${{ matrix.php-version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ['8.1', '8.2', '8.3', '8.4']
+    uses: aligent/workflows/.github/workflows/docker-build.yml@main
+    with:
+      image-name: aligent/phpstan-pipe
+      # Only main/staging publish; pull requests and manual runs on other branches just build
+      push: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' }}
+      build-args: |
+        PHP_VERSION=${{ matrix.php-version }}
+      # Tags: 8.4 (main); 8.4-experimental (staging)
+      tags: |
+        type=raw,value=${{ matrix.php-version }}${{ github.ref_name == 'staging' && '-experimental' || '' }}
+      # Separate cache scope per matrix entry so builds don't overwrite each other's cache
+      cache-from: type=gha,scope=php-${{ matrix.php-version }}
+      cache-to: type=gha,mode=max,scope=php-${{ matrix.php-version }}
